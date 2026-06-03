@@ -1,34 +1,32 @@
 # flipkart_grid
 
-Traffic demand forecasting pipeline for the Flipkart Grid dataset. This repo contains a single “best model” script that:
+Traffic demand forecasting pipeline for the Flipkart Grid dataset. This repo contains a single best model script that:
 
-- Builds time + geohash + contextual features
-- Runs a small validation routine on day-49 continuation slices
-- Trains the final model(s) and writes a competition-ready `submission.csv`
+- Re-imputes missing RoadType variables hierarchically.
+- Extracts Day-over-Day (DoD) ratios, temporal slope extrapolation, multi-resolution spatial lags, and K-Means geohash clusters.
+- Performs chronological Out-of-Fold (OOF) validation across 3 folds on Day-49.
+- Trains an ensemble of LightGBM, XGBoost, and ExtraTrees, with an ExtraTrees guardrail.
+- Corrects per-geohash residual bias based on known early Day-49 slots.
+- Applies strict road-type physical bounds and writes a competition-ready `submission.csv`.
 
 ## Repo Contents
 
 - `traffic_demand_best_model.py` — main training/validation + submission writer
-- `traffic_demand_best_model.ipynb` — optional notebook version
 - `dataset/`
 	- `train.csv`
 	- `test.csv`
 	- `sample_submission.csv`
 - `submission.csv` — generated predictions (`Index`, `demand`)
-- `model_validation_report.csv` — validation scores + chosen strategy/weights
+- `model_validation_report.csv` — validation scores for models and blend
 
 ## Requirements
 
 - Windows / macOS / Linux
 - Python **3.11** (recommended) or 3.12
-	- Note: Python 3.13 can fail to install ML dependencies on some machines due to missing wheels.
 
 Python packages:
 
-- `numpy`, `pandas`
-- `scikit-learn`
-- `lightgbm`
-- `xgboost`
+- `numpy`, `pandas`, `scikit-learn`, `lightgbm`, `xgboost`
 
 ## Setup
 
@@ -54,28 +52,15 @@ pip install numpy pandas scikit-learn lightgbm xgboost
 
 ## Run
 
-### Full run (recommended)
-
-Recomputes validation + retrains final model(s) + overwrites outputs.
+### Model training & prediction
 
 ```powershell
-python traffic_demand_best_model.py --force-validation --force-final
+python traffic_demand_best_model.py
 ```
 
-### Fast run
+### Options
 
-Skips XGBoost and ExtraTrees training. Use this when you want a quicker sanity run.
-
-```powershell
-python traffic_demand_best_model.py --fast --force-validation --force-final
-```
-
-### Other useful flags
-
-- `--data-dir dataset` — change input directory
-- `--output submission.csv` — change output filename
-- `--force-validation` — recompute validation even if `model_validation_report.csv` exists
-- `--force-final` — retrain final models even if the output CSV already exists
+- `--data-dir dataset` — change input data directory
 
 ## Outputs
 
@@ -83,19 +68,12 @@ After a successful run, you should see:
 
 - `submission.csv`
 	- Shape: `(41778, 2)`
-	- Columns: `Index`, `demand`
-	- `demand` is clipped to `[0, 1]`
+	- Columns: `Index`, `demand` (clipped to road-type bounds)
 - `model_validation_report.csv`
-	- Per-fold model metrics + a “chosen strategy” line
-- `feature_importance_lightgbm.csv` (optional)
-	- Written only when the final run trains `lgbm_l2_deep` (if the chosen strategy is ExtraTrees-only, this file may not be produced).
+	- Chronological OOF R2 metrics for individual models and the final ensemble.
 
 ## Notes
 
-- The script includes strict shape/consistency assertions against the provided dataset.
-- Validation is performed on day 49 by holding out later minutes (see `VALIDATION_CUTOFFS` in the script).
-- Final predictions can be a weighted blend; depending on validation, the script may choose an `extra_trees_fallback` strategy.
-
-## Reproducibility
-
-Most randomness is fixed via a constant seed (`RANDOM_STATE = 42`), but exact results can still vary slightly across OS/library versions.
+- Validation is performed on day 49 using chronological cutoff slots (minutes 90, 105, 150).
+- The pipeline applies a Ridge regression meta-learner with a strict guardrail: if ExtraTrees alone performs better than the ensemble, it falls back to ExtraTrees only to prevent overfitting.
+- Randomness is fixed via `RANDOM_STATE = 42`.
