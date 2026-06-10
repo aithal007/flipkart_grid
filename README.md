@@ -1,7 +1,7 @@
 # Flipkart Grid — Traffic Demand Forecasting
 
 **Competition:** Flipkart Grid | Track: Traffic Demand Prediction  
-**Final Score: 99.75** (R² × 100)
+**Final Score: 91.04** (R² × 100)
 
 ---
 
@@ -95,4 +95,4 @@ python final/solution.py --data-dir dataset
 | XGBoost Tweedie | ~0.925 |
 | ExtraTrees | ~0.940 |
 | CatBoost | ~0.940 |
-| **Final Blend** | **~0.9975 → Score: 99.75** |
+| **Final Blend** | **~0.9104 → Score: 91.04** |
