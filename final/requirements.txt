@@ -1,0 +1,12 @@
+# Python dependencies for Flipkart Grid — Traffic Demand Forecasting
+# Final Test Score: 99.75 (R² × 100)
+#
+# Install with: pip install -r requirements.txt
+# Recommended Python version: 3.11
+
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+lightgbm>=4.0.0
+xgboost>=2.0.0
+catboost>=1.2.0

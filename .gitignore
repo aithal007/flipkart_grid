@@ -1,4 +1,35 @@
+# Virtual environments
 .venv/
+venv/
+env/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Jupyter
 .ipynb_checkpoints/
+
+# Large data files (too big for GitHub)
+*.zip
+*.cbm
+*.pth
+*.csv
+merged.csv
+overfit_train_predictions.csv
+training.csv.zip
+
+# Experiment / scratch directories
+scratch/
+deep_overfit_smoke/
+deep_overfit_smoke_exact/
+deep_overfit_smoke_exact2/
+deep_overfit_smoke_mem/
+deep_legit_smoke/
+catboost_info/
+
+# Misc generated files
+model_config.json
+overfit_baseline_report.csv
